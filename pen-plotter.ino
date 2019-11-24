@@ -16,13 +16,8 @@ bool printing = true;
 StaticJsonDocument<1000> configJson;
 const char* ssid  = "SSID";
 const char* password = "PASSWORD";
-long canvasWidth = 1000;
-long currentLeft = canvasWidth;
-long currentRight = canvasWidth;
 float zoomFactor = 1.0;
 
-static float origoX = canvasWidth / 2;
-static float origoY = sqrt(pow(canvasWidth, 2) - pow(origoX, 2));
 static float lastX = 0;
 static float lastY = 0;
 static float homeX = 0;
@@ -35,8 +30,6 @@ void setup() {
     Serial.println("Setup");
     initConfig();
     initFileSystem();
-    Serial.print("Canvas width:");
-    Serial.println(canvasWidth);
     initMotors();
     initServer();
     serverRouting();
@@ -58,8 +51,11 @@ void setMotorSpeed(long distL, long distR, long directionLeft, long directionRig
             speedR = (distR * speed / distL);
         }
     }
-    motorLeft.setSpeed(speedR);
-    motorRight.setSpeed(speedL);
+    motorLeft.setSpeed(speedR * directionRight);
+    motorRight.setSpeed(speedL * directionLeft);
+    Serial.print(speedR  * directionRight);
+    Serial.print(" speed ");
+    Serial.println(speedL  * directionLeft);
 }
 
 void moveMotors(float distL, float distR, int directionLeft, int directionRight) {
@@ -83,59 +79,35 @@ void moveMotors(float distL, float distR, int directionLeft, int directionRight)
     Serial.println(motorRight.currentPosition());   
 }
 
-void drawLine(float distanceLeft, float distanceRight){
-    Serial.print(distanceLeft);
+void drawLine(float x, float y){
+    Serial.print(x);
     Serial.print(" dist ");
-    Serial.println(distanceRight);
-    int directionLeft = MOTOR_LEFT_DIRECTION;
-    int directionRight = MOTOR_RIGHT_DIRECTION;
-    float distL = distanceLeft;
-    float distR = distanceRight;
-    if (distanceLeft < 0) {
-        directionLeft = directionLeft * -1;
-        distL = distL * -1;
+    Serial.println(y);
+    int directionX = MOTOR_LEFT_DIRECTION;
+    int directionY = MOTOR_RIGHT_DIRECTION;
+    if (x < 0) {
+        x = x * -1;
+        directionX = directionX * -1;
     }
-    if (distanceRight < 0) {
-        directionRight = directionRight * -1;
-        distR = distR * -1;
+    if (y < 0) {
+        y = y * -1;
+        directionY = directionY * -1;
     }
-    moveMotors(distL, distR, directionLeft, directionRight);
-}
-
-void getDistance(float x, float y, float *distanceLeft, float *distanceRight) {
-    float nextX = x * zoomFactor + lastX;
-    float nextY = y * zoomFactor + lastY;
-    float leftX = origoX + nextX;
-    float rightX = canvasWidth - leftX;
-    float yPos  = nextY + origoY;
-    float newLeft  = sqrt(pow(leftX, 2) + pow(yPos, 2));
-    float newRight = sqrt(pow(rightX, 2) + pow(yPos, 2));
-    *distanceLeft  = (newLeft - currentLeft);
-    *distanceRight = (newRight - currentRight);
-    currentLeft = newLeft;
-    currentRight = newRight;
-    lastX = nextX;
-    lastY = nextY;
+    moveMotors(x, y, directionX, directionY);
 }
 
 void goHome() {
-    float distanceLeft = 0;
-    float distanceRight = 0;
     homeX = homeX * -1;
     homeY = homeY * -1;
-    getDistance(homeX,homeY, &distanceLeft, &distanceRight);
-    drawLine(distanceLeft, distanceRight);
+    drawLine(homeX, homeY);
     homeX = 0;
     homeY = 0;
 }
 
-void moveToXY(long x, long y) {
-    float distanceLeft = 0;
-    float distanceRight = 0;
+void moveToXY(float x, float y) {
     homeX = homeX + x;
     homeY = homeY + y;
-    getDistance(x,y, &distanceLeft, &distanceRight);
-    drawLine(distanceLeft, distanceRight);
+    drawLine(x, y);
 }
 
 void plotDone() {

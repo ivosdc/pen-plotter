@@ -122,11 +122,7 @@ bool postPlotterConfig() {
         server.send(400);
         return false;
     }
-    canvasWidth = plotterConfigJson["canvasWidth"];
-    currentLeft = plotterConfigJson["currentLeft"];
-    currentRight = plotterConfigJson["currentRight"];
     zoomFactor = plotterConfigJson["zoomFactor"];
-    setOrigo();
     writeConfig();
     server.send(201, "application/json", configJson["plotter"]);
 
@@ -186,4 +182,3 @@ void serverRouting() {
 void loop() {
     server.handleClient();
 }
-

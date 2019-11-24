@@ -1,26 +1,11 @@
 #include "Config.h"
 
-void setOrigo() {
-    // law of cosines
-    float enumerator = pow(canvasWidth, 2) + pow(currentLeft, 2) - pow(currentRight, 2);
-    float denominator = 2 * canvasWidth * currentLeft;
-    float angle = acos(enumerator / denominator);
-    origoX = currentLeft * cos(angle);
-    origoY = currentLeft * sin(angle);
-    Serial.print(origoX);
-    Serial.print(" origo ");
-    Serial.println(origoY);
-}
 
 void initConfig() {
     configJson["server"]["ssid"] = ssid;
     configJson["server"]["password"] = password;
-    configJson["plotter"]["canvasWidth"] = canvasWidth;
-    configJson["plotter"]["currentLeft"] = currentLeft;
-    configJson["plotter"]["currentRight"] = currentRight;
     configJson["plotter"]["zoomFactor"] = zoomFactor;
     serializeJson(configJson, configData);
-    setOrigo();
 }
 
 bool setConfig() {
@@ -33,9 +18,6 @@ bool setConfig() {
     }
     ssid = newConfigJson["server"]["ssid"];
     password = newConfigJson["server"]["password"];
-    canvasWidth = newConfigJson["plotter"]["canvasWidth"];
-    currentLeft = newConfigJson["plotter"]["currentLeft"];
-    currentRight = newConfigJson["plotter"]["currentRight"];
     zoomFactor = newConfigJson["plotter"]["zoomFactor"];
     initConfig();
 
