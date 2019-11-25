@@ -1,27 +1,13 @@
-# Portable Pocket Plotter - ESP-8266 restful wall plotter
-
-![wall-plotter after work](assets/wall-plotter-cat.png "ESP-8266 wall-plotter")
-![The SVG](svg-converter/svg/cat.svg "The SVG template")
-![wall-plotter in action](assets/wall-plotter-apng.png "ESP-8266 wall-plotter in action")
-
-### Why?
-This project is inspired by https://www.hackster.io/fredrikstridsman/stringent-the-15-wall-plotter-d965ca - good work!
-
-Time goes by... I have no Arduino left. But there are 3 Node-MCU boards in my garage.
-My needs were to use a `ESP 8266` board with its WiFi capabilities instead of a *poor* Arduino.
+# ESP-8266 restful 2D pen plotter
+![pen-plotter prototype](assets/prototype-2d-penplotter.png "Board")
 
 
 ### Hardware:
 - 1 x NodeMCU 12e (ESP8266, I used a mini)
 - 2 x step motor 28BYJ-48
-- 1 x case (https://github.com/snebragd/stringent/blob/master/Hardware)
-- 2 x spools (spool2.stl)
 - 1 x Servo SG90
-- min. 3 meters of fishing line. Depends on your wanted canvas size.
 - a pen
 - rubber band
-
-![wall-plotter after work](assets/wall-plotter-prototype.png "End of prototype")
 
 ### Software:
 **You need a [rest-api plugin for your browser](https://github.com/RESTEDClient/RESTED) or a tool like [postman](https://www.getpostman.com/)!**
