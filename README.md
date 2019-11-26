@@ -32,8 +32,8 @@ These are standard libs from Arduino and have just to be added and installed.
 See the svg-converter [README.md](svg-converter/README.md):
 
 ```
-> cd wall-plotter/svg-converter 
-> node svg2data.js svg/vws.svg
+> cd pen-plotter/svg-converter 
+> node svg2data.js svg/beetle.svg
 ```
 
 This will create a `wall-plotter.data` file for upload.

@@ -11,3 +11,5 @@ svg-converter/node_modules
 svg-converter/wall-plotter-test.data
 svg-converter/wall-plotter.svg
 svg-converter/wall-plotter.data
+frontend/node_modules
+frontend/public
