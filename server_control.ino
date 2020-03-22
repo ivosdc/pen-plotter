@@ -6,7 +6,6 @@ IPAddress accessPointIP(192, 168, 0, 1);
 IPAddress netMask(255, 255, 255, 0);
 DNSServer dnsServer;
 
-const char HeaderUploadPlot[] PROGMEM = "HTTP/1.1 303 OK\r\nLocation:/plot\r\nCache-Control: no-cache\r\n";
 const char UploadPlot[] PROGMEM = R"(<form method="POST" action="/plot" enctype="multipart/form-data">
      <input type="file" name="/wall-plotter.data"><input type="submit" value="Upload"></form>Upload a wall-plott.data)";
 
@@ -83,6 +82,20 @@ void getPlot() {
     }
 }
 
+bool postZoomFactor() {
+    StaticJsonDocument<50> zoomJson;
+    String body = server.arg("plain");
+    if (DeserializationError error = deserializeJson(zoomJson, body)) {
+        Serial.println("error parsing json");
+        server.send(400);
+        return false;
+    }
+    zoomFactor = zoomJson["zoomFactor"];
+    server.send(201, "text/plain", "zoom:" + String(zoomFactor));
+    writeConfig();
+
+    return true;
+}
 
 bool postWlanSettings() {
     server.sendHeader("Access-Control-Allow-Origin", "*");
@@ -123,8 +136,6 @@ bool postPlotterConfig() {
 }
 
 void postFileUpload(){
-    server.sendHeader("Access-Control-Allow-Origin", "*");
-    server.sendHeader("Access-Control-Allow-Headers", "*");
     Serial.println("Upload.");
     static File fsUploadFile;
     HTTPUpload& upload = server.upload();
@@ -138,7 +149,9 @@ void postFileUpload(){
         if (fsUploadFile)
             fsUploadFile.close();
         printf("Upload Size: %u\n", upload.totalSize);
-        server.sendContent(HeaderUploadPlot);
+        server.sendHeader("Access-Control-Allow-Origin", "*");
+        server.sendHeader("Access-Control-Allow-Headers", "*");
+        server.send(200, "text/plain", "uploaded");
     }
 }
 
@@ -187,13 +200,14 @@ void getOptionsOk() {
 
 void serverRouting() {
     server.on("/", HTTP_GET, getRoot);
-    server.on("/plot", HTTP_POST, []() {}, postFileUpload);
+    server.on("/plot", HTTP_POST,[](){}, postFileUpload);
     server.on("/plot", HTTP_GET, getPlot);
     server.on("/plot", HTTP_OPTIONS, getOptionsOk);
     server.on("/stop", HTTP_POST, postPlotStop);
     server.on("/stop", HTTP_OPTIONS, getOptionsOk);
     server.on("/start", HTTP_POST, postPlotStart);
     server.on("/start", HTTP_OPTIONS, getOptionsOk);
+    server.on("/zoomfactor", HTTP_POST, postZoomFactor);
     server.on("/wifi", HTTP_POST, postWlanSettings);
     server.on("/wifi", HTTP_OPTIONS, getOptionsOk);
     server.on("/upload", HTTP_GET, getUpload);
