@@ -83,22 +83,10 @@ void getPlot() {
     }
 }
 
-bool postZoomFactor() {
-    StaticJsonDocument<50> zoomJson;
-    String body = server.arg("plain");
-    if (DeserializationError error = deserializeJson(zoomJson, body)) {
-        Serial.println("error parsing json");
-        server.send(400);
-        return false;
-    }
-    zoomFactor = zoomJson["zoomFactor"];
-    server.send(201, "text/plain", "zoom:" + String(zoomFactor));
-    writeConfig();
-
-    return true;
-}
 
 bool postWlanSettings() {
+    server.sendHeader("Access-Control-Allow-Origin", "*");
+    server.sendHeader("Access-Control-Allow-Headers", "*");
     StaticJsonDocument<100> wlanJson;
     String body = server.arg("plain");
     if (DeserializationError error = deserializeJson(wlanJson, body)) {
@@ -135,6 +123,8 @@ bool postPlotterConfig() {
 }
 
 void postFileUpload(){
+    server.sendHeader("Access-Control-Allow-Origin", "*");
+    server.sendHeader("Access-Control-Allow-Headers", "*");
     Serial.println("Upload.");
     static File fsUploadFile;
     HTTPUpload& upload = server.upload();
@@ -153,15 +143,21 @@ void postFileUpload(){
 }
 
 void postPlotStop() {
+    server.sendHeader("Access-Control-Allow-Origin", "*");
+    server.sendHeader("Access-Control-Allow-Headers", "*");
     printing = false;
     server.send(200, "text/plain", "Plot stopped.");
 }
 
 void getUpload() {
+    server.sendHeader("Access-Control-Allow-Origin", "*");
+    server.sendHeader("Access-Control-Allow-Headers", "*");
     server.send(200, "text/html", UploadPlot);
 }
 
 void getRoot() {
+    server.sendHeader("Access-Control-Allow-Origin", "*");
+    server.sendHeader("Access-Control-Allow-Headers", "*");
     server.send(200, "text/html", configJson["plotter"]);
 }
 
@@ -175,6 +171,8 @@ void getPlotterConfig() {
 }
 
 void postPlotStart() {
+    server.sendHeader("Access-Control-Allow-Origin", "*");
+    server.sendHeader("Access-Control-Allow-Headers", "*");
     if (!startPlot()) {
         server.send(404, "text/plain", "NotFound");
     }
@@ -193,9 +191,11 @@ void serverRouting() {
     server.on("/plot", HTTP_GET, getPlot);
     server.on("/plot", HTTP_OPTIONS, getOptionsOk);
     server.on("/stop", HTTP_POST, postPlotStop);
+    server.on("/stop", HTTP_OPTIONS, getOptionsOk);
     server.on("/start", HTTP_POST, postPlotStart);
-    server.on("/zoomfactor", HTTP_POST, postZoomFactor);
+    server.on("/start", HTTP_OPTIONS, getOptionsOk);
     server.on("/wifi", HTTP_POST, postWlanSettings);
+    server.on("/wifi", HTTP_OPTIONS, getOptionsOk);
     server.on("/upload", HTTP_GET, getUpload);
     server.on("/config", HTTP_POST, postPlotterConfig);
     server.on("/config", HTTP_GET, getPlotterConfig);
