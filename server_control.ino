@@ -71,10 +71,13 @@ void initServer() {
 }
 
 void getPlot() {
+    server.sendHeader("Access-Control-Allow-Origin", "*");
+    server.sendHeader("Access-Control-Allow-Headers", "*");
     if (SPIFFS.exists(UPLOAD_PLOT_FILENAME)) {
         File f = SPIFFS.open(UPLOAD_PLOT_FILENAME, "r");
         server.streamFile(f, "application/json");
         f.close();
+      server.send(200);
     } else {
       server.send(404, "text/plain", "NotFound");
     }
@@ -113,6 +116,8 @@ bool postWlanSettings() {
 }
 
 bool postPlotterConfig() {
+    server.sendHeader("Access-Control-Allow-Origin", "*");
+    server.sendHeader("Access-Control-Allow-Headers", "*");
     Serial.println("postPlotterConfig");
     StaticJsonDocument<500> plotterConfigJson;
     String body = server.arg("plain");
@@ -160,23 +165,41 @@ void getRoot() {
     server.send(200, "text/html", configJson["plotter"]);
 }
 
+void getPlotterConfig() {
+   String response = "[";
+   response += configData;
+   response +=  "]";
+   server.sendHeader("Access-Control-Allow-Origin", "*");
+   server.sendHeader("Access-Control-Allow-Headers", "*");
+   server.send(200, "application/json", response);
+}
+
 void postPlotStart() {
-    server.send(200);
     if (!startPlot()) {
         server.send(404, "text/plain", "NotFound");
     }
+    server.send(200);
+}
+
+void getOptionsOk() {
+    server.sendHeader("Access-Control-Allow-Origin", "*");
+    server.sendHeader("Access-Control-Allow-Headers", "*");
+    server.send(200);
 }
 
 void serverRouting() {
     server.on("/", HTTP_GET, getRoot);
     server.on("/plot", HTTP_POST, []() {}, postFileUpload);
     server.on("/plot", HTTP_GET, getPlot);
+    server.on("/plot", HTTP_OPTIONS, getOptionsOk);
     server.on("/stop", HTTP_POST, postPlotStop);
     server.on("/start", HTTP_POST, postPlotStart);
     server.on("/zoomfactor", HTTP_POST, postZoomFactor);
     server.on("/wifi", HTTP_POST, postWlanSettings);
     server.on("/upload", HTTP_GET, getUpload);
     server.on("/config", HTTP_POST, postPlotterConfig);
+    server.on("/config", HTTP_GET, getPlotterConfig);
+    server.on("/config", HTTP_OPTIONS, getOptionsOk);
 }
 
 void loop() {
