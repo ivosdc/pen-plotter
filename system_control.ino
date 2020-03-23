@@ -51,10 +51,6 @@ void initFileSystem() {
     SPIFFS.begin();
     File f = SPIFFS.open("/config.json", "r");
     if (!f) {
-        Serial.println("read file failed");
-        Serial.println("Please wait... formatting");
-        SPIFFS.format();
-        Serial.println("Done.");
         writeConfig();
     } else {
         f.readStringUntil('\n').toCharArray(configFile, 1000);
