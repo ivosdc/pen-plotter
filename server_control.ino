@@ -9,6 +9,11 @@ DNSServer dnsServer;
 const char UploadPlot[] PROGMEM = R"(<form method="POST" action="/plot" enctype="multipart/form-data">
      <input type="file" name="/wall-plotter.data"><input type="submit" value="Upload"></form>Upload a wall-plott.data)";
 
+void setHeader() {
+    server.sendHeader("Access-Control-Allow-Origin", "*");
+    server.sendHeader("Access-Control-Allow-Headers", "*");
+}
+
 void initDNS() {
     Serial.println("Starting DNS-Server.");
     dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
@@ -70,8 +75,7 @@ void initServer() {
 }
 
 void getPlot() {
-    server.sendHeader("Access-Control-Allow-Origin", "*");
-    server.sendHeader("Access-Control-Allow-Headers", "*");
+    setHeader();
     if (SPIFFS.exists(UPLOAD_PLOT_FILENAME)) {
         File f = SPIFFS.open(UPLOAD_PLOT_FILENAME, "r");
         server.streamFile(f, "application/json");
@@ -82,24 +86,8 @@ void getPlot() {
     }
 }
 
-bool postZoomFactor() {
-    StaticJsonDocument<50> zoomJson;
-    String body = server.arg("plain");
-    if (DeserializationError error = deserializeJson(zoomJson, body)) {
-        Serial.println("error parsing json");
-        server.send(400);
-        return false;
-    }
-    zoomFactor = zoomJson["zoomFactor"];
-    server.send(201, "text/plain", "zoom:" + String(zoomFactor));
-    writeConfig();
-
-    return true;
-}
-
 bool postWlanSettings() {
-    server.sendHeader("Access-Control-Allow-Origin", "*");
-    server.sendHeader("Access-Control-Allow-Headers", "*");
+    setHeader();
     StaticJsonDocument<100> wlanJson;
     String body = server.arg("plain");
     if (DeserializationError error = deserializeJson(wlanJson, body)) {
@@ -117,8 +105,7 @@ bool postWlanSettings() {
 }
 
 bool postPlotterConfig() {
-    server.sendHeader("Access-Control-Allow-Origin", "*");
-    server.sendHeader("Access-Control-Allow-Headers", "*");
+    setHeader();
     Serial.println("postPlotterConfig");
     StaticJsonDocument<500> plotterConfigJson;
     String body = server.arg("plain");
@@ -149,110 +136,64 @@ void postFileUpload(){
         if (fsUploadFile)
             fsUploadFile.close();
         printf("Upload Size: %u\n", upload.totalSize);
-        server.sendHeader("Access-Control-Allow-Origin", "*");
-        server.sendHeader("Access-Control-Allow-Headers", "*");
+        setHeader();
         server.send(200, "text/plain", "uploaded");
     }
 }
 
 void postPlotStop() {
-    server.sendHeader("Access-Control-Allow-Origin", "*");
-    server.sendHeader("Access-Control-Allow-Headers", "*");
+    setHeader();
     printing = false;
     server.send(200, "text/plain", "Plot stopped.");
 }
 
 void getUpload() {
-    server.sendHeader("Access-Control-Allow-Origin", "*");
-    server.sendHeader("Access-Control-Allow-Headers", "*");
+    setHeader();
     server.send(200, "text/html", UploadPlot);
 }
 
-
-String getContentType(String filename){
-  if(filename.endsWith(".html")) return "text/html";
-  else if(filename.endsWith(".css")) return "text/css";
-  else if(filename.endsWith(".js")) return "application/javascript";
-  else if(filename.endsWith(".ico")) return "image/x-icon";
-  else if(filename.endsWith(".gz")) return "application/x-gzip";
-  return "text/plain";
-}
-
-bool handleFileRead(String path){  // send the right file to the client (if it exists)
-  Serial.println("handleFileRead: " + path);
-  if(path.endsWith("/")) path += "index.html";           // If a folder is requested, send the index file
-  String contentType = getContentType(path);             // Get the MIME type
-  String pathWithGz = path + ".gz";
-  if(SPIFFS.exists(pathWithGz) || SPIFFS.exists(path)){  // If the file exists, either as a compressed archive, or normal
-    if(SPIFFS.exists(pathWithGz))                          // If there's a compressed version available
-      path += ".gz";                                         // Use the compressed version
-    File file = SPIFFS.open(path, "r");                    // Open the file
-    size_t sent = server.streamFile(file, contentType);    // Send it to the client
-    file.close();                                          // Close the file again
-    Serial.println(String("\tSent file: ") + path);
-    return true;
-  }
-  Serial.println(String("\tFile Not Found: ") + path);
-  return false;                                          // If the file doesn't exist, return false
+void getFile(String filename) {
+    setHeader();
+    handleFileRead(filename);
+    server.send(200);
 }
 
 void getRoot() {
-    server.sendHeader("Access-Control-Allow-Origin", "*");
-    server.sendHeader("Access-Control-Allow-Headers", "*");
-    handleFileRead("/index.html");
-    server.send(200);
+  getFile("/index.html");
 }
 
 void getFavicon() {
-    server.sendHeader("Access-Control-Allow-Origin", "*");
-    server.sendHeader("Access-Control-Allow-Headers", "*");
-    handleFileRead("/favicon.png");
-    server.send(200);
+    getFile("/favicon.png");
 }
 
 void getGlobalCss() {
-    server.sendHeader("Access-Control-Allow-Origin", "*");
-    server.sendHeader("Access-Control-Allow-Headers", "*");
-    handleFileRead("/global.css");
-    server.send(200);
+    getFile("/global.css");
 }
 
 void getBundleCss() {
-    server.sendHeader("Access-Control-Allow-Origin", "*");
-    server.sendHeader("Access-Control-Allow-Headers", "*");
-    handleFileRead("/build/bundle.css");
-    server.send(200);
+    getFile("/build/bundle.css");
 }
 
 void getBundleJs() {
-    server.sendHeader("Access-Control-Allow-Origin", "*");
-    server.sendHeader("Access-Control-Allow-Headers", "*");
-    handleFileRead("/build/bundle.js");
-    server.send(200);
+    getFile("/build/bundle.js");
 }
-
 
 void getPlotterConfig() {
    String response = "[";
    response += configData;
    response +=  "]";
-   server.sendHeader("Access-Control-Allow-Origin", "*");
-   server.sendHeader("Access-Control-Allow-Headers", "*");
+   setHeader();
    server.send(200, "application/json", response);
 }
 
 void postPlotStart() {
-    server.sendHeader("Access-Control-Allow-Origin", "*");
-    server.sendHeader("Access-Control-Allow-Headers", "*");
-    if (!startPlot()) {
-        server.send(404, "text/plain", "NotFound");
-    }
+    setHeader();
     server.send(200);
+    startPlot();
 }
 
 void getOptionsOk() {
-    server.sendHeader("Access-Control-Allow-Origin", "*");
-    server.sendHeader("Access-Control-Allow-Headers", "*");
+    setHeader();
     server.send(200);
 }
 
@@ -269,7 +210,6 @@ void serverRouting() {
     server.on("/stop", HTTP_OPTIONS, getOptionsOk);
     server.on("/start", HTTP_POST, postPlotStart);
     server.on("/start", HTTP_OPTIONS, getOptionsOk);
-    server.on("/zoomfactor", HTTP_POST, postZoomFactor);
     server.on("/wifi", HTTP_POST, postWlanSettings);
     server.on("/wifi", HTTP_OPTIONS, getOptionsOk);
     server.on("/upload", HTTP_GET, getUpload);
