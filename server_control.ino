@@ -6,9 +6,6 @@ IPAddress accessPointIP(192, 168, 0, 1);
 IPAddress netMask(255, 255, 255, 0);
 DNSServer dnsServer;
 
-const char UploadPlot[] PROGMEM = R"(<form method="POST" action="/plot" enctype="multipart/form-data">
-     <input type="file" name="/wall-plotter.data"><input type="submit" value="Upload"></form>Upload a wall-plott.data)";
-
 void setHeader() {
     server.sendHeader("Access-Control-Allow-Origin", "*");
     server.sendHeader("Access-Control-Allow-Headers", "*");
@@ -147,14 +144,14 @@ void postPlotStop() {
     server.send(200, "text/plain", "Plot stopped.");
 }
 
-void getUpload() {
+void getOptionsOk() {
     setHeader();
-    server.send(200, "text/html", UploadPlot);
+    server.send(200);
 }
 
 void getFile(String filename) {
-    setHeader();
     handleFileRead(filename);
+    setHeader();
     server.send(200);
 }
 
@@ -192,11 +189,6 @@ void postPlotStart() {
     startPlot();
 }
 
-void getOptionsOk() {
-    setHeader();
-    server.send(200);
-}
-
 void serverRouting() {
     server.on("/", HTTP_GET, getRoot);
     server.on("/global.css", HTTP_GET, getGlobalCss);
@@ -212,7 +204,6 @@ void serverRouting() {
     server.on("/start", HTTP_OPTIONS, getOptionsOk);
     server.on("/wifi", HTTP_POST, postWlanSettings);
     server.on("/wifi", HTTP_OPTIONS, getOptionsOk);
-    server.on("/upload", HTTP_GET, getUpload);
     server.on("/config", HTTP_POST, postPlotterConfig);
     server.on("/config", HTTP_GET, getPlotterConfig);
     server.on("/config", HTTP_OPTIONS, getOptionsOk);
