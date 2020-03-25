@@ -21,41 +21,17 @@
 
 These are standard libs from Arduino and have just to be added and installed. 
 
-## What happens until now:
+## Features:
 
 ### Spawns own WiFi when no WiFi is reachable. 
  - you can enter your own WiFi parameter. Just POST a json  to the server.
  - Default IP from own **Accespoint 192.168.0.1**
  - Your uploaded WiFI credentials are stored in a persistant config.json
 
-### *minimal* CLI tool to convert *gimp*-svg to plotter-data 
-See the svg-converter [README.md](svg-converter/README.md):
+### Ploltter-ui to upload *gimp*-svg
+Integrated in /data folder.
 
-```
-> cd pen-plotter/svg-converter 
-> node svg2data.js svg/beetle.svg
-```
-
-This will create a `wall-plotter.data` file for upload.
-
-
-### Upload plots with WiFi 
- - GET `/upload`: Upload a `wall-plotter.data` to ESP8266. A webform for file upload is presented.
- - GET `/plot`: Shows the last stored *wall-plotter.data*
- - POST `/plot`: Handles the file upload *wall-plotter.data*
- 
-### Set configuration parameter
-- POST `/config`: Set canvas width and the position of the wall-plotter. ```{"canvasWidth":"1000","currentLeft":"330","currentRight":"999","zoomFactor":"1"}``` to `/config`.
-- POST `/wifi`: Set your WiFi parameter. ``` {"ssid":"MY-SSID","password":"PASSWORD"} ```
-- POST `/zoom`: Only change the output size. ``` {"zoomFactor":"1"} ```. 1 (no zoom) is default. 
-
-### Start / Stop the wall-plotter on demand
-- POST `/start`: This starts plotting your uploaded *wall-plotter.data*
-- POST `/stop`: This will interrupt the running plot, if there is any.
-
-
-[See all API-endpoints in wall-plotter::serverRouting()](https://github.com/ivosdc/wall-plotter/blob/ec4a6ae48933ddb8831ab3e29a7f0a8e4150781f/server_control.ino#L174)
-
+[Svelte](https://svelte.dev) App [Plotter-UI](https://github.com/ivosdc/plotter-ui) on github.
 
 
 ### Soldering
