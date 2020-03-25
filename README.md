@@ -21,7 +21,7 @@
 
 These are standard libs from Arduino and have just to be added and installed. 
 
-## Features:
+## What happens until now:
 
 ### Spawns own WiFi when no WiFi is reachable. 
  - you can enter your own WiFi parameter. Just POST a json  to the server.
